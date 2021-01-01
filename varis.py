@@ -14,17 +14,17 @@ d12  = lambda : randint(1,12)
 d20  = lambda : randint(1,20)
 d100 = lambda : randint(1,100)
 
-lvl = 9
+lvl = 10 # why won't this work locally?
 
 class Varis :
     """
 gem
-7 charges (recharges d6 charges at dawn)
+6/7 charges (recharges d6 charges at dawn)
 - use extra charge to upcast a level 
 lightining bolt (1 charge, dc 15) 
 chain lighting (5 charges, dc 15)
 
-if you use 5 charges at once, (xd4 lighting damage to self, x=charges)
+if you use 5 charges at once, (xd4 lighting damage to s, x=charges)
 acrobatics [dex]
 animal handeling [wis]
 arcana [int] prof 
@@ -50,7 +50,7 @@ mending
 prestidigitation
 fire bolt: d20 + (3+4)[prof_bon, int mod] to hit, d10 to dmg
 
-lvl 1 [3|4]
+lvl 1 [4|4]
 (*) magic missile 
 //(*) catapult: spell-save = 15 = 8 + 3[prof_bon] + 4[int_mod],
     3d8()
@@ -67,21 +67,22 @@ lvl 2 [3|3]
 (*) misty step
 (*) knock
 
-lvl 3 [2|3] 
-(*) fireball
+lvl 3 [1|3] 
+( ) fireball
 //( ) magic weapon
 (*) haste 
 (*) fly
+(*) counter_spell
 
 lvl 4 [2|2]
 ( ) fabricate
 (*) otiluke's resilient sphere
 
-lvl 5 [1|1]
+lvl 5 [2|2]
 (*) passwall
 ( ) wall of force
 
-4/7 lightning bolts 
+3/7 lightning bolts 
 can do chain lightning
 
 "ultimate healing potion, 3 doses"
@@ -104,49 +105,74 @@ needs to collect everything
 
     """
     class Main_stat :
-        def __init__(self,score):
-            self.score = score
-            self.mod = floor(score/2)-5
-        def __repr__(self):
-            return str(self.score) 
-        def __add__(self, o): 
-            return self.score + o
+        def __init__(s,score):
+            s.score = score
+            s.mod = floor(score/2)-5
+        def __repr__(s):
+            return str(s.score) 
+        def __add__(s, o): 
+            return s.score + o
 
-    name = 'Varis'
-    #raven_name = 'Bertrand'
-    # from a college in NeverWinter
-    lvl = 9
-    lvl_type = 'wizard'
-    race = 'high elf'
 
-    strength = Main_stat(10)     # 10, 0
-    dexterity = Main_stat(16)    # 16, 3
-    constitution = Main_stat(10) # 10, 0
-    intelligence = Main_stat(18) # 18, 4
-    wisdom = Main_stat(13)       # 13, 1
-    charisma = Main_stat(10)     # 10, 0
-    
-    proficiency_bonus = [0,
+    def __init__(s, 
+                 hp = 46, 
+                 lvl = 10,
+                 inspired = 0,
+                 name = 'Varis',
+                 lvl_type = 'wizard', # not flexible enough
+                 race = 'high elf',
+                 armor_class = 15,
+                 speed = 30,
+                 inpsiration = True,
+                 advantage = 0,
+                 can_see_invisible_stuff = 0,
+                 duplicates = 0,
+                 bardic_inpspiration = 0, #d6()  on saves or att roll
+                 hp_pots = 0, # drank two
+                ):
+        class Main_stat :
+            def __init__(s,score):
+                s.score = score
+                s.mod = floor(score/2)-5
+            def __repr__(s):
+                return str(s.score) 
+            def __add__(s, o): 
+                return s.score + o
+        s.strength = Main_stat(10)     # 10, 0
+        s.dexterity = Main_stat(16)    # 16, 3
+        s.constitution = Main_stat(10) # 10, 0
+        s.intelligence = Main_stat(18) # 18, 4
+        s.wisdom = Main_stat(13)       # 13, 1
+        s.charisma = Main_stat(10)     # 10, 0
+        s.hp = hp
+        s.lvl = lvl
+        s.max_hp = 6+4*lvl
+        s.inspiration = inspired
+        s.name = name
+        s.lvl_type = lvl_type
+        s.armor_class = armor_class
+        s.speed = speed
+        s.proficiency_bonus = [0,
                        2,2,2,2,
                        3,3,3,3,
                        4,4,4,4,
                        5,5,5,5,
                        6,6,6,6][lvl]
-    
-    armor_class = 15
-    initiative = dexterity.mod # 3
-    speed = 30 
-    max_hp = 6+4*lvl# 44
-    hp = max_hp
-    passive_perception = 10 + wisdom.mod # 10+2=12
-    spell_save_dc = 8 + proficiency_bonus+intelligence.mod # 15
-    spell_attack_mod = proficiency_bonus+intelligence.mod # 7
-    
-    advantage = 0
-    can_see_invisible_stuff = 0
-    duplicates = 0
-    bardic_inpspiration = 0 #d6()  on saves or att roll
-    hp_pots = 1 # drank two
+        s.initiative = s.dexterity.mod # 3
+        s.passive_perception = 10 + s.wisdom.mod # 10+2=12
+        s.spell_save_dc = 8 + s.proficiency_bonus+s.intelligence.mod # 15
+        s.spell_attack_mod = s.proficiency_bonus+s.intelligence.mod # 7
+        s.concentration_save = lambda : d20() + s.constitution.mod
+        s.dex_save = lambda : d20() + s.dexterity.mod
+        s.con_save = lambda : d20() + s.constitution.mod
+        s.wis_save = lambda : d20() + s.wisdom.mod
+    #max_hp = 6+4*lvl# 44
+
+    #raven_name = 'Birdtrand'
+    # from a college in NeverWinter
+
+   
+    # make this into a class 
     money = "money: 3gold_pieces + 30copper_pieces"
     stuff = [
         'hell hound dust',
@@ -177,9 +203,10 @@ needs to collect everything
         hp_pots -= 1
         heal(d4()+d4()+2)
     
-    concentration_save = lambda : d20() + constitution.mod
 
     class Spell_book :
+        def __init__(s, lvl=lvl):
+            s.lvl = lvl
         
         class Cantrip :
             def known(x): 
@@ -256,6 +283,7 @@ needs to collect everything
                     return 3
             max_spells_slots = max_spells_slots(lvl)
             spells_slots = max_spells_slots
+            counter_spell = 1
             def fire_ball(Lvl=3) :
                 Sum = 0
                 for i in range(1,5+Lvl) :
@@ -280,16 +308,12 @@ needs to collect everything
             Stone_Shape = 0
         lvl4 = Lvl4()
         
-    spell_book = Spell_book()
+    spells = Spell_book()
             
-    def __init__(self, 
-                 hp=max_hp, 
-                 inspired=0):
-        self.hp = hp
-        self.inspiration=inspired
 
 
 varis = Varis()
+v = Varis()
 
 
 def interact():
